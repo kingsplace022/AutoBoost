@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoBoost - Home</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>🚗 AutoBoost</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Available Services</h2>
+    <div id="services"></div>
+  </main>
+
+  <script>
+    // Fetch services from backend
+    fetch("http://localhost:5000/api/services")
+      .then(res => res.json())
+      .then(data => {
+        const servicesDiv = document.getElementById("services");
+        servicesDiv.innerHTML = data.map(service => `
+          <div class="service-card">
+            <h3>${service.name}</h3>
+            <p>${service.description || ""}</p>
+            <strong>₦${service.price}</strong>
+          </div>
+        `).join("");
+      })
+      .catch(err => console.error("Error loading services:", err));
+  </script>
+</body>
+</html>

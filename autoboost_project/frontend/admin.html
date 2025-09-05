@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoBoost - Admin Panel</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>🚗 AutoBoost Admin</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Admin Panel</h2>
+
+    <section>
+      <h3>Manage Services</h3>
+      <form id="addServiceForm">
+        <input type="text" id="serviceName" placeholder="Service Name" required>
+        <input type="text" id="serviceCategory" placeholder="Category" required>
+        <input type="number" id="servicePrice" placeholder="Price" required>
+        <input type="text" id="serviceDescription" placeholder="Description">
+        <button type="submit">Add Service</button>
+      </form>
+      <div id="servicesList"></div>
+    </section>
+
+    <section>
+      <h3>Manage Users</h3>
+      <div id="usersList">Loading users...</div>
+    </section>
+  </main>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    // Fetch all services
+    function loadServices() {
+      fetch("http://localhost:5000/api/services")
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById("servicesList");
+          container.innerHTML = data.map(s => `
+            <div class="service-card">
+              <h4>${s.name}</h4>
+              <p>${s.category} - ₦${s.price}</p>
+              <small>${s.description || ""}</small><br>
+              <button onclick="deleteService('${s._id}')">Delete</button>
+            </div>
+          `).join("");
+        });
+    }
+    loadServices();
+
+    // Add service
+    document.getElementById("addServiceForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const newService = {
+        name: document.getElementById("serviceName").value,
+        category: document.getElementById("serviceCategory").value,
+        price: document.getElementById("servicePrice").value,
+        description: document.getElementById("serviceDescription").value
+      };
+
+      fetch("http://localhost:5000/api/services", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        },
+        body: JSON.stringify(newService)
+      })
+      .then(res => res.json())
+      .then(() => {
+        alert("Service added!");
+        loadServices();
+      });
+    });
+
+    // Delete service
+    function deleteService(id) {
+      fetch(`http://localhost:5000/api/services/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + token }
+      })
+      .then(() => {
+        alert("Service deleted!");
+        loadServices();
+      });
+    }
+
+    // Fetch all users (admin route)
+    fetch("http://localhost:5000/api/admin/users", {
+      headers: { Authorization: "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+      const usersDiv = document.getElementById("usersList");
+      usersDiv.innerHTML = data.map(u => `
+        <div class="user-card">
+          <strong>${u.name}</strong> - ${u.email} (${u.role}) - ₦${u.balance}
+        </div>
+      `).join("");
+    });
+  </script>
+</body>
+</html>

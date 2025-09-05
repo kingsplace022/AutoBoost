@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoBoost - Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>🚗 AutoBoost</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>My Dashboard</h2>
+
+    <section id="profile">
+      <h3>Profile</h3>
+      <p><strong>Name:</strong> <span id="userName">Loading...</span></p>
+      <p><strong>Email:</strong> <span id="userEmail">Loading...</span></p>
+      <p><strong>Balance:</strong> ₦<span id="userBalance">0</span></p>
+      <button onclick="addFunds()">Add Funds</button>
+    </section>
+
+    <section id="orders">
+      <h3>My Orders</h3>
+      <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTable">
+          <tr><td colspan="4">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    // Dummy token for demo (replace with real login token)
+    const token = localStorage.getItem("token");
+
+    // Fetch profile
+    fetch("http://localhost:5000/api/auth/profile", {
+      headers: { Authorization: "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(user => {
+      document.getElementById("userName").innerText = user.name;
+      document.getElementById("userEmail").innerText = user.email;
+      document.getElementById("userBalance").innerText = user.balance;
+    })
+    .catch(() => {
+      document.getElementById("userName").innerText = "Guest";
+      document.getElementById("userEmail").innerText = "Not logged in";
+    });
+
+    // Fetch orders
+    fetch("http://localhost:5000/api/orders", {
+      headers: { Authorization: "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+      const ordersTable = document.getElementById("ordersTable");
+      if (data.length === 0) {
+        ordersTable.innerHTML = "<tr><td colspan='4'>No orders yet</td></tr>";
+      } else {
+        ordersTable.innerHTML = data.map(order => `
+          <tr>
+            <td>${order.service?.name || "Service"}</td>
+            <td>₦${order.amount}</td>
+            <td>${order.status}</td>
+            <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+          </tr>
+        `).join("");
+      }
+    });
+
+    // Dummy add funds
+    function addFunds() {
+      alert("This will connect to Paystack later!");
+    }
+  </script>
+</body>
+</html>
